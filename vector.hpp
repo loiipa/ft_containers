@@ -206,7 +206,7 @@ namespace ft
 
 		/* std::swap (std::vector) : specializes the std::swap algoorithm */
 		/* std::swap(std::vector) */
-		template<class T, class Alloc>
+		template <class T, class Alloc>
 		void swap(std::vector<T, Alloc> & lhs, std::vector<t, Alloc>& & rhs);
 
 	};
