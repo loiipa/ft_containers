@@ -1,4 +1,5 @@
 #include <map>
+#include "utility.hpp"
 
 namespace ft
 {
@@ -8,6 +9,11 @@ namespace ft
 		class Allocator = std::allocator<std::pair<const Key, T> >
 	> class map
 	{
+		typedef Key						key_type;
+		typedef T						mapped_type;
+		typedef ft::pair<const Key, T>	value_type;
+
+
 		class value_compare : std::binary_function<value_type, value_type, bool>
 		{
 		protected:
@@ -94,7 +100,7 @@ namespace ft
 
 	/* insert : inserts elements (public member function) */
 	/* std::map <Key, T, Compare, Allocator>::insert */
-	std::pair<iterator, bool> insert(const value_type& value);
+	ft::pair<iterator, bool> insert(const value_type& value);
 
 	iterator insert(iterator hint, const value_type& value);
 
@@ -124,8 +130,8 @@ namespace ft
 	/* equal_range : returns range of elements matching a specific key (public member function) */
 	/* std::map <Key, T, Compare, Allocator>::equal_range */
 	// iterator를 범위로, 존재하는 key보다 작거나 크면 각각 begin, end를 가리키는 것을 보인다.
-	std::pair<iterator, iterator> equal_range(const Key& key);
-	std::pair<const_iterator, const_iterator> equal_range(const Key& key) const;
+	ft::pair<iterator, iterator> equal_range(const Key& key);
+	ft::pair<const_iterator, const_iterator> equal_range(const Key& key) const;
 
 	/* lower_bound : returns an iterator to the first element not less than the given key (public member function) */
 	/* std::map <Key, T, Compare, Allocator>::lower_bound */
@@ -135,7 +141,46 @@ namespace ft
 	/* upper_bound : returns an iterator to the first element grater than the given key (public member function) */
 	/* std::map <Key, T, Compare, Allocator>::upper_bound */
 	iterator upper_bound(const Key& key);
-	const_iterator upper_bound(const &Key key) const;s
+	const_iterator upper_bound(const &Key key) const;
+
+	/* key_comp : returns the function that compares keys (public member function) */
+	/* std::map<Key, T, Compare, Allocator>::key_comp */
+	key_compare key_comp() const;
+
+	/* value_comp : returns the function that compares keys in objects of type value_type (public member function) */
+	/* std::map<Key, T, Compare, Allocator>::value_comp */
+	ft::map::value_compare value_comp() const;
+
+	/* operator == != < <= > >= : lexicographically compares the values in the map (function template) */
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator==(const ft::map<Key, T, Compare, Alloc>& lhs,
+		const ft::map<Key, T, Compare, Alloc>& rhs);
+
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator!=(const ft::map<Key, T, Compare, Alloc>& lhs,
+		const ft::map<Key, T, Compare, Alloc>& rhs );
+
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator<(const ft::map<Key, T, Compare, Alloc>& lhs,
+		const ft::map<Key, T, Compare, Alloc>& rhs );
+
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator<=(const ft::map<Key, T, Compare, Alloc>& lhs,
+		const ft::map<Key, T, Compare, Alloc>& rhs );
+
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator>(const ft::map<Key, T, Compare, Alloc>& lhs,
+		const ft::map<Key, T, Compare, Alloc>& rhs );
+
+	template <class Key, class T, class Compare, class Alloc>
+	bool operator>=(const ft::map<Key, T, Compare, Alloc>& lhs,
+		const ft::map<Key, T, Compare, Alloc>& rhs );
+
+	/* std::swap : specializes the std::swap algorithm (function template) */
+	// specializes the std::swap algorithm for std::map.
+	template<class key, class T, class Compare, class Alloc>
+	void swap (ft::map<Key, T, Compare, Alloc>& lhs,
+		ft::map<Key, T, Compare, Alloc& rhs);
 
 	};
 }
