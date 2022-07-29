@@ -1,3 +1,4 @@
+#include <memory>
 #include <map>
 #include "utility.hpp"
 
@@ -9,10 +10,22 @@ namespace ft
 		class Allocator = std::allocator<std::pair<const Key, T> >
 	> class map
 	{
-		typedef Key						key_type;
-		typedef T						mapped_type;
-		typedef ft::pair<const Key, T>	value_type;
-
+	public:
+		typedef Key										key_type;
+		typedef T										mapped_type;
+		typedef ft::pair<const Key, T>					value_type;
+		typedef std::size_t								size_type;
+		typedef std::ptrdiff_t							diffenerence_type;
+		typedef Compare									Key_compare;
+		typedef Allocator								allocator_type;
+		typedef value_type&								reference;
+		typedef const value_type&						const_reference;
+		typedef Allocator::pointer						pointer;
+		typedef Allocator::const_pointer				const_pointer;
+		typedef value_type								iterator;
+		typedef	const_value_type						const_iterator;
+		typedef std::reserve_iterator<iterator>			reverse_iterator;
+		typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
 
 		class value_compare : std::binary_function<value_type, value_type, bool>
 		{
