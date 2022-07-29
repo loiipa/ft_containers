@@ -1,4 +1,4 @@
-// #include <type_traits>
+#include <type_traits>
 
 namespace ft
 {
@@ -9,7 +9,6 @@ namespace ft
 	template <class T>
 	struct enable_if<true, T> { typedef T type; };
 
-	// integral쪽은 고민 필요
 	/*
 		integral_constant : compile-time constant of specified type with specified value
 		class template, since C++11
@@ -33,11 +32,22 @@ namespace ft
 	typedef integral_constant<bool, false>	false_type;
 
 	// is_integral_base를 이용하여 해당하는 integral을 true_type으로 해줌.
-	template <class T>
-	struct is_integral_base : public false_type {};
-
-	template <>
-	struct is_integral_base<int> : public true_type {};
+	template <class T> struct is_integral_base : public false_type {};
+	template <> struct is_integral_base<bool> : public true_type {};
+	template <> struct is_integral_base<char> : public true_type {};
+	template <> struct is_integral_base<signed char> : public true_type {};
+	template <> struct is_integral_base<unsigned char> : public true_type {};
+	template <> struct is_integral_base<char16_t> : public true_type {};
+	template <> struct is_integral_base<char32_t> : public true_type {};
+	template <> struct is_integral_base<wchar_t> : public true_type {};
+	template <> struct is_integral_base<short> : public true_type {};
+	template <> struct is_integral_base<unsigned short> : public true_type {};
+	template <> struct is_integral_base<int> : public true_type {};
+	template <> struct is_integral_base<unsigned int> : public true_type {};
+	template <> struct is_integral_base<long> : public true_type {};
+	template <> struct is_integral_base<unsigned long> : public true_type {};
+	template <> struct is_integral_base<long long> : public true_type {};
+	template <> struct is_integral_base<unsigned long long> : public true_type {};
 
 	/*
 		is_integral : checks if a type is an integral type
