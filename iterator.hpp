@@ -37,11 +37,11 @@ namespace ft
 	template <class Iter>
 	struct iterator_traits
 	{
-		typedef Iter::difference_type		difference_type;
-		typedef Iter::value_type			value_type;
-		typedef Iter::pointer				pointer;
-		typedef Iter::reference				reference;
-		typedef Iter::iterator_category		iterator_category;
+		typedef typename Iter::difference_type		difference_type;
+		typedef typename Iter::value_type			value_type;
+		typedef typename Iter::pointer				pointer;
+		typedef typename Iter::reference			reference;
+		typedef typename Iter::iterator_category	iterator_category;
 	};
 
 	template <class T>
@@ -69,24 +69,29 @@ namespace ft
 	template <class Iter>
 	class reverse_iterator
 		: public ft::iterator<
-			ft::iterator_traits<Iter>::iterator_category,
-			ft::iterator_traits<Iter>::value_type,
-			ft::iterator_traits<Iter>::difference_type,
-			ft::iterator_traits<iTer>::pointer,
-			ft::iterator_traits<Iter>::reference,
+			typename ft::iterator_traits<Iter>::iterator_category,
+			typename ft::iterator_traits<Iter>::value_type,
+			typename ft::iterator_traits<Iter>::difference_type,
+			typename ft::iterator_traits<Iter>::pointer,
+			typename ft::iterator_traits<Iter>::reference
 		>
 	{
 	public:
-		typedef Iter											iterator_type;
-		typedef ft::iterator_traits<Iter>::iterator_category	iterator_category;
-		typedef ft::iterator_traits<Iter>::value_type			value_type;
-		typedef ft::iterator_traits<Iter>::difference_type		difference_type;
-		typedef ft::iterator_traits<Iter>::pointer				pointer;
-		typedef ft::iterator_traits<Iter>::reference			reference;
+		typedef Iter													iterator_type;
+		typedef typename ft::iterator_traits<Iter>::iterator_category	iterator_category;
+		typedef typename ft::iterator_traits<Iter>::value_type			value_type;
+		typedef typename ft::iterator_traits<Iter>::difference_type		difference_type;
+		typedef typename ft::iterator_traits<Iter>::pointer				pointer;
+		typedef typename ft::iterator_traits<Iter>::reference			reference;
 
+	protected:
+		/* current(protected) : the underlying iterator of which base() returns a copy */
+		Iter current;
+
+	public:
 		/* (constructor) : constructs a new iterator adaptor */
 		/* std::reverse_iterator<Iter>:reverse_iterator */
-		reverse_iterator() : current() { }
+		reverse_iterator() : current(NULL) { }
 
 		explicit reverse_iterator(iterator_type x) : current(x) { }
 
@@ -164,12 +169,12 @@ namespace ft
 		{
 			reverse_iterator tmp(*this);
 			++current;
-			return *this;
+			return tmp;
 		}
 
 		/* operator+ */
 		// 자기자신의 값이 바뀌지 않음 -> *this가 아니라 생성자로 리턴
-		reverse_iterator& operator+(difference_type n) const
+		reverse_iterator operator+(difference_type n) const
 		{
 			return reverse_iterator(this->current - n);
 		}
@@ -181,7 +186,7 @@ namespace ft
 		}
 
 		/* operator+= */
-		reverse_iterator operator+=(diffenece_type n)
+		reverse_iterator operator+=(difference_type n)
 		{
 			current -= n;
 			return *this;
@@ -193,72 +198,66 @@ namespace ft
 			current += n;
 			return *this;
 		}
-
-	protected:
-		/* current(protected) : the underlying iterator of which base() returns a copy */
-		Iter current;
-
-	public:
-		/* compares the underlying iterators */
-		/* operator== */
-		template <class Iterator1, class Iterator2>
-		bool operator==(const ft::reverse_iterator<Iterator1>& lhs, const ft:reverse_iterator<Iterator2>& rhs)
-		{
-			return lhs->base() == rhs->base();
-		}
-
-		/* operator!= */
-		template <class Iterator1, class Iterator2>
-		bool operator!=(const ft::reverse_iterator<Iterator1>& lhs, const ft::reverse_iterator2<Iterator2>& rhs)
-		{
-			return lhs->base() == rhs->base();
-		}
-
-		/* operator< */
-		template <class Iterator1, class Iterator2>
-		bool operator<(const ft::reverse_iterator<Iterator1>& lhs, const ft:reverse_iterator<Iterator2>& rhs)
-		{
-			return lhs->base() < rhs->base();
-		}
-
-		/* operator<= */
-		template <class Iterator1, class Iterator2>
-		bool operator<=(const ft::reverse_iterator<Iterator1>& lhs, const ft:reverse_iterator<Iterator2>& rhs)
-		{
-			return lhs->base() <= rhs->base();
-		}
-
-		/* operator> */
-		template <class Iterator1, class Iterator2>
-		bool operator>(const ft::reverse_iterator<Iterator1>& lhs, const ft:reverse_iterator<Iterator2>& rhs)
-		{
-			return lhs->base() > rhs->base();
-		}
-
-		/* operator>= */
-		template <class Iterator1, class Iterator2>
-		bool operator>=(const ft::reverse_iterator<Iterator1>& lhs, const ft:reverse_iterator<Iterator2>& rhs)
-		{
-			return lhs->base() >= rhs->base();
-		}
-
-		/* operator+ : advances the iterator */
-		/* operator+(std::reverse_iterator) */
-		/* 2 + itr 같이 iterator가 뒤에 오는 경우 */
-		template <class Iter>
-		reverse_iterator<Iter> operator+(
-			typename reverse_iterator<Iter>::difference_type n, const reverse_iterator<Iter>& it )
-		{
-			return reverse_iterator<Iter>(it.base() - n);
-		}
-
-		/* operator- : conputes the distance beetween two iterator adaptors */
-		/* operator-(std::reverse_iterator) */
-		template <class Iterator>
-		typename reverse_iterator<Iterator>::difference_type operator-(
-			const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs )
-		{
-			return rhs.base() - lhs.base();
-		}
 	};
+	/* compares the underlying iterators */
+	/* operator== */
+	template <class Iterator1, class Iterator2>
+	bool operator==(const ft::reverse_iterator<Iterator1>& lhs, const ft::reverse_iterator<Iterator2>& rhs)
+	{
+		return lhs->base() == rhs->base();
+	}
+
+	/* operator!= */
+	template <class Iterator1, class Iterator2>
+	bool operator!=(const ft::reverse_iterator<Iterator1>& lhs, const ft::reverse_iterator<Iterator2>& rhs)
+	{
+		return lhs->base() != rhs->base();
+	}
+
+	/* operator< */
+	template <class Iterator1, class Iterator2>
+	bool operator<(const ft::reverse_iterator<Iterator1>& lhs, const ft::reverse_iterator<Iterator2>& rhs)
+	{
+		return lhs->base() < rhs->base();
+	}
+
+	/* operator<= */
+	template <class Iterator1, class Iterator2>
+	bool operator<=(const ft::reverse_iterator<Iterator1>& lhs, const ft::reverse_iterator<Iterator2>& rhs)
+	{
+		return lhs->base() <= rhs->base();
+	}
+
+	/* operator> */
+	template <class Iterator1, class Iterator2>
+	bool operator>(const ft::reverse_iterator<Iterator1>& lhs, const ft::reverse_iterator<Iterator2>& rhs)
+	{
+		return lhs->base() > rhs->base();
+	}
+
+	/* operator>= */
+	template <class Iterator1, class Iterator2>
+	bool operator>=(const ft::reverse_iterator<Iterator1>& lhs, const ft::reverse_iterator<Iterator2>& rhs)
+	{
+		return lhs->base() >= rhs->base();
+	}
+
+	/* operator+ : advances the iterator */
+	/* operator+(std::reverse_iterator) */
+	/* 2 + itr 같이 iterator가 뒤에 오는 경우 */
+	template <class Iter>
+	reverse_iterator<Iter> operator+(
+		typename reverse_iterator<Iter>::difference_type n, const reverse_iterator<Iter>& it)
+	{
+		return reverse_iterator<Iter>(it.base() - n);
+	}
+
+	/* operator- : conputes the distance beetween two iterator adaptors */
+	/* operator-(std::reverse_iterator) */
+	template <class Iter>
+	typename reverse_iterator<Iter>::difference_type operator-(
+		const reverse_iterator<Iter>& lhs, const reverse_iterator<Iter>& rhs)
+	{
+		return rhs.base() - lhs.base();
+	}
 }

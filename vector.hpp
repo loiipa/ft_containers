@@ -1,9 +1,13 @@
+#include <iostream>
 #include <memory>
 // #include <vector>
+#include <stdexcept>
+#include "vector_iterator.hpp"
 
 // 멤벼 변수가 무엇인지 확인해봐야 함.
 // bool 자료형에 대해 따로 구현할 필요가 없음
 // allocator는 std::allocator 가능
+// 예외처리 추가해야함
 
 namespace ft
 {
@@ -17,30 +21,68 @@ namespace ft
 		typedef std::ptrdiff_t							difference_type;
 		typedef value_type&								reference;
 		typedef const value_type&						const_reference;
-		typedef Allocator::pointer						pointer;
-		typedef Allocator::const_pointer				const_pointer;
-
-		typedef value_type 								iterator;				/* LegacyRandomAccessIterator and LegacyContiguousIterator to */
-		typedef const value_type						const_iterator;			/* LegacyRandomAccessIterator and LegacyContiguousIterator to */
+		typedef typename Allocator::pointer				pointer;
+		typedef typename Allocator::const_pointer		const_pointer;
+		typedef vector_iterator<pointer>				iterator;
+		typedef vector_iterator<const_pointer>			const_iterator;
 		typedef std::reverse_iterator<iterator>			reverse_iterator;
 		typedef std::reverse_iterator<const_iterator> 	const_reverse_iterator;
 
+		/* LegacyRandomAccessIterator and LegacyContiguousIterator to */
+		// typedef value_type 								iterator;
+		// typedef const value_type						const_iterator;
 
+	private:
+		pointer			_begin;
+		pointer			_end;
+		pointer			_end_cap;
+		allocator_type	_alloc;
 
+	public:
 		// Member functions
 
 		/* (constructor) : constructs the vector */
 		/* std::vector<T, Allocator>::vector */
-		vector();
-		explicit vector(const Allocator& alloc);
-		explicit vector(size_type count, const T& value = T(), const Allocator& alloc = Allocator());
+		// 원래는 cppreference 참고, 생성자는 https://cplusplus.com/reference/vector/vector/vector/ 참고하였음
+
+		// vector();
+		// explicit vector(const Allocator& alloc)
+		// explicit vector(size_type count, const T& value = T(), const Allocator& alloc = Allocator())
+		/*
 		template <class InputIt>
 		vector(InputIt first, InputIt last, const Allocator& alloc = Allocator());
+		*/
+		// vector(const vector& other);
+
+		explicit vector(const allocator_type& alloc = allocator_type())
+		: _begin(NULL), _end(NULL), _end_cap(NULL), _alloc(alloc) { }
+
+		explicit vector(size_type count, const value_type& value = value_type(), const allocator_type& alloc = allocator_type())
+		: _begin(NULL), _end(NULL), _end_cap(NULL), _alloc(alloc)
+		{
+			// count <= 0일때는..?
+			if (count > max_size())
+				throw std::length_error("vector");
+			_begin = _alloc.allocate(count);
+			_end = _begin;
+			_end_cap = _begin + count;
+			// ul, _end는 명령문이 실행된 후 변화됨.
+			for (size_type ul = 0; ul < count; ++ul, (void) ++_end)
+			{
+				_alloc.construct(_end, 0);
+			}
+		}
+		template <class InputIt>
+		vector(InputIt first, InputIt last, const allocator_type& alloc = allocator_type());
 		vector(const vector& other);
 
 		/* (decstructor) : destructs the vector */
 		/* std::vector<T, Allocator>::~vector */
-		~vector();
+		~vector()
+		{
+			clear();
+			_alloc.deallocate(_begin, _end_cap - _begin);
+		}
 
 		/* operator= assigns : values to the container */
 		/* std:;vector<T, Allocator>::operator= */
@@ -50,7 +92,7 @@ namespace ft
 		/* std::vector<T, Allocator>::assign */
 		void assign(size_type count, const T& value);
 		template<class InputIt>
-		void assign(InputIt first, Inputit last);
+		void assign(InputIt first, InputIt last);
 
 		/* get_allocator : returns the associated allocator */
 		/* std::vector<T, Allocator>::get_allocator */
@@ -108,7 +150,7 @@ namespace ft
 		/* rend : returns a reverse iterator to the end */
 		/*std::vector<T, Allocator>::rend */
 		reverse_iterator rend();
-		const_reverse iterator rend() const;
+		const_reverse_iterator rend() const;
 
 
 		// Capacity
@@ -119,15 +161,24 @@ namespace ft
 
 		/* size : returns the number of elements */
 		/* std::vector<T, Allocator>::size */
-		size_type size() const;
+		size_type size() const
+		{
+			return _end - _begin;
+		}
 
 		/* max_size : returns the maximum possible number of elements */
 		/* std::vector<T, Allocator>::max_size */
-		size_type max_size() const;
+		size_type max_size() const
+		{
+			return _alloc.max_size();
+		}
 
 		/* reserve : reserve storage */
 		/* std::vector<T, Allocator>::reserve */
-		void reserve(size_type new_cap);
+		void reserve(size_type new_cap)
+		{
+			return _end_cap - _begin;
+		}
 
 		/* exceptions */
 		// std::length_error if (new_cap > max_size())
@@ -143,14 +194,21 @@ namespace ft
 
 		/* clear : clears the contents */
 		/* std::vector<T, Allocator>::clear */
-		void clear();
+		void clear()
+		{
+			while (_begin != _end)
+			{
+				--_end;
+				_alloc.destroy(_end);
+			}
+		}
 
 		/* insert : inserts elements */
 		/* std::vector<T, Allocator>::insert */
 		iterator insert(iterator pos, const T& value);
 		void insert(iterator pos, size_type count, const T& value);
 		template<class InputIt>
-		void insert(iterator pos, inputIt first, InputIt last);
+		void insert(iterator pos, InputIt first, InputIt last);
 
 		// pos - iterator before which the content will be inserted. pos may be the end() iterator
 
@@ -175,39 +233,37 @@ namespace ft
 		/* std::vector<T, Allocator>::swap */
 		void swap(vector & othrer);
 
-
-		// Non-member functions
-
-		/* lexicographically compares the values in the vector */
-		/* operator== */
-		template <class T, class Alloc>
-		bool operator==(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
-
-		/* operator!= */
-		template <class T, class Alloc>
-		bool operator!=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
-
-		/* operator< */
-		template <class T, class Alloc>
-		bool operator<(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
-
-		/* operator<= */
-		template <class T, class Alloc>
-		bool operator<=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
-
-		/* operator> */
-		template <class T, class Alloc>
-		bool operator>(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
-
-		/* operator>= */
-		template <class T, class Alloc>
-		bool operator>=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
-
-
-		/* std::swap (std::vector) : specializes the std::swap algoorithm */
-		/* std::swap(std::vector) */
-		template <class T, class Alloc>
-		void swap(std::vector<T, Alloc> & lhs, std::vector<t, Alloc>& & rhs);
-
 	};
+	// Non-member functions
+
+	/* lexicographically compares the values in the vector */
+	/* operator== */
+	template <class T, class Alloc>
+	bool operator==(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+
+	/* operator!= */
+	template <class T, class Alloc>
+	bool operator!=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+
+	/* operator< */
+	template <class T, class Alloc>
+	bool operator<(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+
+	/* operator<= */
+	template <class T, class Alloc>
+	bool operator<=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+
+	/* operator> */
+	template <class T, class Alloc>
+	bool operator>(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+
+	/* operator>= */
+	template <class T, class Alloc>
+	bool operator>=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+
+
+	/* std::swap (std::vector) : specializes the std::swap algoorithm */
+	/* std::swap(std::vector) */
+	template <class T, class Alloc>
+	void swap(std::vector<T, Alloc> & lhs, std::vector<T, Alloc>&  rhs);
 }
