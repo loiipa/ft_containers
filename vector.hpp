@@ -1,8 +1,10 @@
 #include <iostream>
 #include <memory>
 #include <iterator>	//std::distance
-// #include <vector>
+#include <vector>
 #include <stdexcept>
+#include "utility.hpp"
+#include "algorithm.hpp"
 #include "type_traits.hpp"
 #include "vector_iterator.hpp"
 
@@ -63,15 +65,15 @@ namespace ft
 		: _begin(NULL), _end(NULL), _end_cap(NULL), _alloc(alloc)
 		{
 			// count <= 0일때는..?
-			if (count > max_size())
+			if (count > this->max_size())
 				throw std::length_error("vector");
-			_begin = _alloc.allocate(count);
-			_end = _begin;
-			_end_cap = _begin + count;
+			this->_begin = this->_alloc.allocate(count);
+			this->_end = this->_begin;
+			this->_end_cap = this->_begin + count;
 			// ul, _end는 명령문이 실행된 후 변화됨.
-			for (size_type ul = 0; ul < count; ++ul, (void) ++_end)
+			for (size_type ul = 0; ul < count; ++ul, (void) ++(this->_end))
 			{
-				_alloc.construct(_end, value);
+				this->_alloc.construct(this->_end, value);
 			}
 		}
 
@@ -82,18 +84,33 @@ namespace ft
 		: _begin(NULL), _end(NULL), _end_cap(NULL), _alloc(alloc)
 		{
 			difference_type dif = std::distance(first, last);
-			_begin = _alloc.allocate(dif);
-			_end = _begin;
-			_end_cap = _begin + dif;
+			this->_begin = this->_alloc.allocate(dif);
+			this->_end = this->_begin;
+			this->_end_cap = this->_begin + dif;
 
 			for (InputIt it = first; it != last; ++it)
 			{
-				_alloc.construct(_end, *it);
-				++_end;
+				this->_alloc.construct(this->_end, *it);
+				++(this->_end);
 			}
 		}
+
 		vector(const vector& other)
-		: _begin(other._begin), _end(other._end), _end_cap(other._end_cap), _alloc(other._alloc) { }
+		: _begin(NULL), _end(NULL), _end_cap(NULL), _alloc(other._alloc)
+		{
+			size_type count = other.size();
+			if (count > this->max_size())
+				throw std::length_error("vector");
+			this->_begin = this->_alloc.allocate(count);
+			this->_end = this->_begin;
+			this->_end_cap = this->_begin + count;
+
+			for (const_iterator it = other.begin(); it != other.end(); ++it)
+			{
+				this->_alloc.construct(this->_end, *it);
+				++(this->_end);
+			}
+		}
 
 		/* (decstructor) : destructs the vector */
 		/* std::vector<T, Allocator>::~vector */
@@ -105,48 +122,123 @@ namespace ft
 
 		/* operator= assigns : values to the container */
 		/* std:;vector<T, Allocator>::operator= */
-		vector& operator=(const vector& other);
+		vector& operator=(const vector& other)
+		{
+			this->_alloc = other._alloc;
+
+			size_type count = other.size();
+			if (count > this->max_size())
+				throw std::length_error("vector");
+			this->_begin = this->_alloc.allocate(count);
+			this->_end = this->_begin;
+			this->_end_cap = this->_begin + count;
+
+			for (const_iterator it = other.begin(); it != other.end(); ++it)
+			{
+				this->_alloc.construct(this->_end, *it);
+				++(this->_end);
+			}
+			return *this;
+		}
 
 		/* assign : assigns values to the container */
 		/* std::vector<T, Allocator>::assign */
-		void assign(size_type count, const T& value);
+		void assign(size_type count, const T& value)
+		{
+			if (count > this->max_size())
+				throw std::length_error("vector");
+
+			this->clear();
+			if (this->capacity() < count)
+			{
+				this->_alloc.deallocate(this->_begin, this->_end_cap - this->_begin);
+				this->_begin = _alloc.allocate(count);
+				this->_end = this->_begin;
+				this->_end_cap = this->_begin + count;
+			}
+			else
+			{
+				this->_end = this->_begin;
+			}
+
+			for (size_type ul = 0; ul < count; ++ul, (void) ++(this->_end))
+			{
+				this->_alloc.construct(this->_end, value);
+			}
+		}
 		template<class InputIt>
-		void assign(InputIt first, InputIt last);
+		void assign(InputIt first, InputIt last, typename enable_if<!is_integral<InputIt>::value>::type* = NULL)
+		{
+
+		}
 
 		/* get_allocator : returns the associated allocator */
 		/* std::vector<T, Allocator>::get_allocator */
-		allocator_type get_allocator() const;
+		allocator_type get_allocator() const
+		{
+			return this->_alloc;
+		}
 
 
 		// Element access
 
 		/* at : access specified element with bounds checking */
 		/* std::vector<T, Allocator>::at */
-		reference at(size_type pos);
-		const_reference at(size_type pos) const;
+		reference at(size_type pos)
+		{
+			if (pos < 0 || pos >= this->size())
+				throw std::out_of_range("vector");
+			return *(this->begin() + pos);
+		}
+		const_reference at(size_type pos) const
+		{
+			if (pos < 0 || pos >= this->size())
+				throw std::out_of_range("vector");
+			return *(this->begin() + pos);
+		}
 
 		/* exceptions */
 		/* std::out_of_range if !(pos < size()) */
 
 		/* operator[] a: ccess specified element */
 		/* std::vector<T, Allocator>::operator[] */
-		reference operator[](size_type pos);
-		const_reference operator[](size_type pos) const;
+		reference operator[](size_type pos)
+		{
+			return *(this->begin() + pos);
+		}
+		const_reference operator[](size_type pos) const
+		{
+			return *(this->begin() + pos);
+		}
 
 		/* front : access the first element */
 		/* std::vector<T, Allocator>::front */
-		reference front();
-		const_reference front() const;
+		reference front()
+		{
+			return *(this->begin());
+		}
+
+		const_reference front() const
+		{
+			return *(this->begin());
+		}
 
 		/* back : access the last element */
 		/* std::vector<T, Allocator>::back */
-		reference back();
-		const_reference back() const;
+		reference back()
+		{
+			return *(this->end() - 1);
+		}
+
+		const_reference back() const
+		{
+			return *(this->end() - 1);
+		}
 
 		/* data : direct access to the underlying array */
 		/* std::vector<T, Allocator>::data */
-		T* data();
-		const T* data() const;
+		// T* data();
+		// const T* data() const;
 
 
 		// Iterator
@@ -155,61 +247,99 @@ namespace ft
 		/*std::vector<T, Allocator>::begin */
 		iterator begin()
 		{
-			return iterator(_begin);
+			return iterator(this->_begin);
 		}
+
 		const_iterator begin() const
 		{
-			return const_iterator(_begin);
+			return const_iterator(this->_begin);
 		}
 
 		/* end : returns an iterator to the end */
 		/*std::vector<T, Allocator>::end */
 		iterator end()
 		{
-			return iterator(_end);
+			return iterator(this->_end);
 		}
 
 		const_iterator end() const
 		{
-			return const_iterator(_end);
+			return const_iterator(this->_end);
 		}
 
 		/* rbegin : returns a reverse iterator to the beginning */
 		/*std::vector<T, Allocator>::rbegin */
-		reverse_iterator rbegin();
-		const_reverse_iterator rbegin() const;
+		reverse_iterator rbegin()
+		{
+			return reverse_iterator(this->end());
+		}
+
+		const_reverse_iterator rbegin() const
+		{
+			return const_reverse_iterator(this->end());
+		}
 
 		/* rend : returns a reverse iterator to the end */
 		/*std::vector<T, Allocator>::rend */
-		reverse_iterator rend();
-		const_reverse_iterator rend() const;
+		reverse_iterator rend()
+		{
+			return reverse_iterator(this->begin());
+		}
+
+		const_reverse_iterator rend() const
+		{
+			return const_reverse_iterator(this->begin());
+		}
 
 
 		// Capacity
 
 		/* empty : checks whether the container is empty */
 		/* std::vector<T, Allocator>::empty */
-		bool empty() const;
+		bool empty() const
+		{
+			return this->_begin == this->_end;
+		}
 
 		/* size : returns the number of elements */
 		/* std::vector<T, Allocator>::size */
 		size_type size() const
 		{
-			return _end - _begin;
+			return this->_end - this->_begin;
 		}
 
 		/* max_size : returns the maximum possible number of elements */
 		/* std::vector<T, Allocator>::max_size */
 		size_type max_size() const
 		{
-			return _alloc.max_size();
+			return this->_alloc.max_size();
 		}
 
 		/* reserve : reserve storage */
 		/* std::vector<T, Allocator>::reserve */
 		void reserve(size_type new_cap)
 		{
-			return _end_cap - _begin;
+			if (new_cap > this->max_size())
+				throw std::length_error("vector");
+			if (new_cap <= this->capacity())
+			{
+				return;
+			}
+			allocator_type allocNew;
+			pointer beginNew = allocNew.allocate(new_cap);
+			pointer endNew = beginNew;
+
+			pointer beginTmp = this->_begin;
+			
+			for (size_type ul = 0; ul < this->size(); ++ul, (void) ++endNew, (void) ++beginTmp)
+			{
+				*endNew = *beginTmp;
+			}
+			this->_alloc.deallocate(_begin, _end_cap - _begin);
+			this->_begin = beginNew;
+			this->_end = endNew;
+			this->_end_cap = beginNew + new_cap;
+			this->_alloc = allocNew;
 		}
 
 		/* exceptions */
@@ -219,7 +349,10 @@ namespace ft
 		/* capacity : returns the number of elements
 		that can be held in currently acllocated storage */
 		/* std::vector<T, Allocator>::capacity */
-		size_type capacity() const;
+		size_type capacity() const
+		{
+			return this->_end_cap - this->_begin;
+		}
 
 
 		// Modifiers
@@ -228,16 +361,37 @@ namespace ft
 		/* std::vector<T, Allocator>::clear */
 		void clear()
 		{
-			while (_begin != _end)
+			while (this->_begin != this->_end)
 			{
-				--_end;
-				_alloc.destroy(_end);
+				--(this->_end);
+				this->_alloc.destroy(this->_end);
 			}
 		}
 
 		/* insert : inserts elements */
 		/* std::vector<T, Allocator>::insert */
-		iterator insert(iterator pos, const T& value);
+		iterator insert(iterator pos, const T& value)
+		{
+			size_type addSize = 1;
+			if (this->size() + addSize > this->max_size())
+				throw std::length_error("vector");
+			if (this->size() == this->capacity())
+			{
+				// size 키우기
+				// 이동 -> 00000 / a / 000 뭐 이런식
+				
+			}
+			else
+			{
+				// 해당 pos ~ end()까지 한칸씩 이동 -> _end += 1;
+				// pos자리에 삽입
+				this->_alloc.construct(this->_end, this->back());
+				++(this->_end);
+				//for (size_type ul = 0; ul < this->)
+				
+			}
+			// 끝자리 삽입?
+		}
 		void insert(iterator pos, size_type count, const T& value);
 		template<class InputIt>
 		void insert(iterator pos, InputIt first, InputIt last);
@@ -251,19 +405,85 @@ namespace ft
 
 		/* push_back : adds an elements to the end */
 		/* std::vector<T, Allocator>::push_back */
-		void push_back(const T& value);
+		void push_back(const T& value)
+		{
+			size_type addSize = 1;
+
+			if (this->size() + addSize > this->max_size())
+				throw std::length_error("vector");
+			if (this->size() == this->capacity())
+			{
+				if (this->capacity() * 2 > this->max_size())
+				{
+					this->reserve(this->max_size());
+				}
+				else
+				{
+					if (this->capacity() < addSize)
+						this->reserve(addSize);
+					else
+						this->reserve(this->capacity() * 2);
+				}
+			}
+			this->_alloc.construct(this->_end, value);
+			++(this->_end);
+		}
 
 		/* pop_back : removes the last element */
 		/* std::vector<T, Allocator>::push_back */
-		void pop_back();
+		void pop_back()
+		{
+			--(this->_end);
+			this->_alloc.destory(this->_end);
+		}
 
 		/* resize : changes the number of elements stored */
 		/* std::vector<T, Allocator>::resize */
-		void resize(size_type count, T value = T());
+		void resize(size_type count, T value = T())
+		{
+			// 초과 -> 초과된 공간만큼 value 채움
+			// if (capacity() < count);
+			// 미만 -> 깎임
+			if (count > this->max_size())
+				throw std::length_error("vector");
+			if (count < this->size())
+			{
+				for (size_type ul = 0; ul < this->size() - count; ++ul);
+				{
+					--(this->end());
+					this->_alloc.destroy(this->_end);
+				}
+				return;
+			}
+			else if (count > this->capacity())
+			{
+				if (count < this->capacity() * 2)
+				{
+					if (this->capacity() * 2 > this->max_size())
+						this->reserve(this->max_size());
+					else
+						this->reserve(this->capacity() * 2);
+				}
+				else
+				{
+					this->reserve(count);
+				}
+			}
+			for (size_type ul = 0; ul < count - this->size(); ++ul, ++(this->_end))
+			{
+				this->_alloc.construct(this->_end, value);
+			}
+		}
 
 		/* swap : swaps the contents */
 		/* std::vector<T, Allocator>::swap */
-		void swap(vector & othrer);
+		void swap(vector& other)
+		{
+			ft::swap(this->_begin, other._begin);
+			ft::swap(this->_end, other._end);
+			ft::swap(this->_end_cap, other._end_cap);
+			ft::swap(this->_alloc, other._alloc);
+		}
 
 	};
 	// Non-member functions
@@ -271,31 +491,52 @@ namespace ft
 	/* lexicographically compares the values in the vector */
 	/* operator== */
 	template <class T, class Alloc>
-	bool operator==(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+	bool operator==(const ft::vector<T, Alloc> & lhs, const ft::vector<T, Alloc> & rhs)
+	{
+		return equal(lhs.begin(), lhs.end(), rhs.begin());
+	}
 
 	/* operator!= */
 	template <class T, class Alloc>
-	bool operator!=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+	bool operator!=(const ft::vector<T, Alloc> & lhs, const ft::vector<T, Alloc> & rhs)
+	{
+		return !(lhs == rhs);
+	}
 
 	/* operator< */
 	template <class T, class Alloc>
-	bool operator<(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+	bool operator<(const ft::vector<T, Alloc> & lhs, const ft::vector<T, Alloc> & rhs)
+	{
+		return lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+	}
 
 	/* operator<= */
 	template <class T, class Alloc>
-	bool operator<=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+	bool operator<=(const ft::vector<T, Alloc> & lhs, const ft::vector<T, Alloc> & rhs)
+	{
+		return !(rhs < lhs);
+	}
 
 	/* operator> */
 	template <class T, class Alloc>
-	bool operator>(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+	bool operator>(const ft::vector<T, Alloc> & lhs, const ft::vector<T, Alloc> & rhs)
+	{
+		return rhs < lhs;
+	}
 
 	/* operator>= */
 	template <class T, class Alloc>
-	bool operator>=(const std::vector<T, Alloc> & lhs, const std::vector<T, Alloc> & rhs);
+	bool operator>=(const ft::vector<T, Alloc> & lhs, const ft::vector<T, Alloc> & rhs)
+	{
+		return !(lhs < rhs);
+	}
 
 
 	/* std::swap (std::vector) : specializes the std::swap algoorithm */
 	/* std::swap(std::vector) */
 	template <class T, class Alloc>
-	void swap(std::vector<T, Alloc> & lhs, std::vector<T, Alloc>&  rhs);
+	void swap(ft::vector<T, Alloc>& lhs, ft::vector<T, Alloc>& rhs)
+	{
+		lhs.swap(rhs);
+	}
 }

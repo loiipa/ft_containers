@@ -1,12 +1,12 @@
 // #include <algorithm>
-
+#include <iostream>
 namespace ft
 {
 	/* std::equal : determines if two sets of elements are the same (function templtae) */
 	template <class InputIt1, class InputIt2>
 	bool equal (InputIt1 first1, InputIt1 last1, InputIt2 first2)
 	{
-		for (; first1 != last1; ++first1, ++first2)
+		for (; first1 != last1; ++first1, (void) ++first2)
 		{
 			if (!(*first1 == *first2))
 			{
@@ -19,7 +19,7 @@ namespace ft
 	template <class InputIt1, class InputIt2, class BinaryPredicate>
 	bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, BinaryPredicate p)
 	{
-		for (; first1 != last1; ++first1, ++first2)
+		for (; first1 != last1; ++first1, (void) ++first2)
 		{
 			if (!p(*first1, *first2))
 			{
@@ -66,5 +66,13 @@ namespace ft
 			}
 		}
 		return (first1 == last1) && (first2 != last2);
+	}
+
+	template <class T>
+	void swap(T& a, T& b)
+	{
+		T tmp = a;
+		a = b;
+		b = tmp;
 	}
 }

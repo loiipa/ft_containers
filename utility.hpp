@@ -23,7 +23,7 @@ namespace ft
 		template <class U1, class U2>
 		pair(const pair<U1, U2>& p) : first(p.first), second(p.second) { }
 
-		pair(const pair& p) = default;
+		// pair(const pair& p) = default;
 
 
 		/* operator= : assigns the contents (public member function) */
@@ -63,7 +63,7 @@ namespace ft
 	template <class T1, class T2>
 	bool operator<(const ft::pair<T1, T2>& lhs, const ft::pair<T1, T2>& rhs)
 	{
-		return (lhs.first < rhs.first) || (!(rhs.first < lhs.first) && (lhs.second < rhs.second))
+		return (lhs.first < rhs.first) || (!(rhs.first < lhs.first) && (lhs.second < rhs.second));
 	}
 
 	template <class T1, class T2>
