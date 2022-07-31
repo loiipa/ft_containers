@@ -3,13 +3,7 @@
 namespace ft
 {
 	template <class Iter>
-	class vector_iterator : public ft::iterator<
-		typename ft::iterator_traits<Iter>::iterator_category,
-		typename ft::iterator_traits<Iter>::value_type,
-		typename ft::iterator_traits<Iter>::difference_type,
-		typename ft::iterator_traits<Iter>::pointer,
-		typename ft::iterator_traits<Iter>::reference
-		>
+	class vector_iterator : public ft::iterator<std::random_access_iterator_tag, Iter>
 	{
 	public:
 		typedef Iter													iterator_type;
@@ -108,42 +102,42 @@ namespace ft
 	bool operator==(
 		const ft::vector_iterator<Iterator1>& lhs, const ft::vector_iterator<Iterator2>&rhs)
 	{
-		return lhs->base() == rhs->base();
+		return lhs.base() == rhs.base();
 	}
 
 	template <class Iterator1, class Iterator2>
 	bool operator!=(
 		const ft::vector_iterator<Iterator1>& lhs, const ft::vector_iterator<Iterator2>&rhs)
 	{
-		return lhs->base() != rhs->base();
+		return lhs.base() != rhs.base();
 	}
 
 	template <class Iterator1, class Iterator2>
 	bool operator<(
 		const ft::vector_iterator<Iterator1>& lhs, const ft::vector_iterator<Iterator2>&rhs)
 	{
-		return lhs->base() < rhs->base();
+		return lhs.base() < rhs.base();
 	}
 
 	template <class Iterator1, class Iterator2>
 	bool operator<=(
 		const ft::vector_iterator<Iterator1>& lhs, const ft::vector_iterator<Iterator2>&rhs)
 	{
-		return lhs->base() <= rhs->base();
+		return lhs.base() <= rhs.base();
 	}
 
 	template <class Iterator1, class Iterator2>
 	bool operator>(
 		const ft::vector_iterator<Iterator1>& lhs, const ft::vector_iterator<Iterator2>&rhs)
 	{
-		return lhs->base() > rhs->base();
+		return lhs.base() > rhs.base();
 	}
 
 	template <class Iterator1, class Iterator2>
 	bool operator>=(
 		const ft::vector_iterator<Iterator1>& lhs, const ft::vector_iterator<Iterator2>&rhs)
 	{
-		return lhs->base() >= rhs->base();
+		return lhs.base() >= rhs.base();
 	}
 
 	template <class Iter>
@@ -157,6 +151,6 @@ namespace ft
 	typename vector_iterator<Iter>::difference_type operator-(
 		const vector_iterator<Iter>& lhs, vector_iterator<Iter>& rhs)
 	{
-		return lhs->base() - rhs->base();
+		return lhs.base() - rhs.base();
 	}
 }

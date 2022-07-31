@@ -1,7 +1,9 @@
 #include <iostream>
 #include <memory>
+#include <iterator>	//std::distance
 // #include <vector>
 #include <stdexcept>
+#include "type_traits.hpp"
 #include "vector_iterator.hpp"
 
 // 멤벼 변수가 무엇인지 확인해봐야 함.
@@ -69,12 +71,29 @@ namespace ft
 			// ul, _end는 명령문이 실행된 후 변화됨.
 			for (size_type ul = 0; ul < count; ++ul, (void) ++_end)
 			{
-				_alloc.construct(_end, 0);
+				_alloc.construct(_end, value);
 			}
 		}
+
+		// 위의 생성자를 의도하지만, 여기로 들어가는 것을 방지하기위해 enable_if로 막아준다.
 		template <class InputIt>
-		vector(InputIt first, InputIt last, const allocator_type& alloc = allocator_type());
-		vector(const vector& other);
+		vector(InputIt first, InputIt last, const allocator_type& alloc = allocator_type(),
+			typename enable_if<!is_integral<InputIt>::value>::type* = NULL)
+		: _begin(NULL), _end(NULL), _end_cap(NULL), _alloc(alloc)
+		{
+			difference_type dif = std::distance(first, last);
+			_begin = _alloc.allocate(dif);
+			_end = _begin;
+			_end_cap = _begin + dif;
+
+			for (InputIt it = first; it != last; ++it)
+			{
+				_alloc.construct(_end, *it);
+				++_end;
+			}
+		}
+		vector(const vector& other)
+		: _begin(other._begin), _end(other._end), _end_cap(other._end_cap), _alloc(other._alloc) { }
 
 		/* (decstructor) : destructs the vector */
 		/* std::vector<T, Allocator>::~vector */
@@ -134,13 +153,26 @@ namespace ft
 
 		/* begin : returns an iterator to the beginning */
 		/*std::vector<T, Allocator>::begin */
-		iterator begin();
-		const_iterator begin() const;
+		iterator begin()
+		{
+			return iterator(_begin);
+		}
+		const_iterator begin() const
+		{
+			return const_iterator(_begin);
+		}
 
 		/* end : returns an iterator to the end */
 		/*std::vector<T, Allocator>::end */
-		iterator end();
-		const_iterator end() const;
+		iterator end()
+		{
+			return iterator(_end);
+		}
+
+		const_iterator end() const
+		{
+			return const_iterator(_end);
+		}
 
 		/* rbegin : returns a reverse iterator to the beginning */
 		/*std::vector<T, Allocator>::rbegin */
