@@ -73,8 +73,11 @@ int main()
 		PrintValue("vector<int> size", svi4.size(), fvi4.size());
 
 
-		std::vector<int> svi5(3, 3);
-		ft::vector<int> fvi5(3, 3);
+		std::vector<int> svi5(300, 3);
+		ft::vector<int> fvi5(300, 3);
+		svi5.reserve(1000);
+		fvi5.reserve(1000);
+
 		svi4 = svi5;
 		fvi4 = fvi5;
 		PrintValue("vector<int> size", svi4.size(), fvi4.size());
@@ -126,18 +129,26 @@ int main()
 
 	{
 		std::vector<int> svi1;
-		std::vector<int> fvi1;
+		ft::vector<int> fvi1;
 
 		for (int i = 0; i < 10; i++)
 		{
 			svi1.push_back(i);
 			fvi1.push_back(i);
 		}
+		svi1.insert(svi1.begin() + 1, 3, 3);
+		fvi1.insert(fvi1.begin() + 1, 3, 3);
+		svi1.insert(svi1.begin() + 1, 20);
+		fvi1.insert(fvi1.begin() + 1, 20);
+		svi1.insert(svi1.begin()+1, svi1.begin()+3, svi1.begin()+5);
+		fvi1.insert(fvi1.begin()+1, fvi1.begin()+3, fvi1.begin()+5);
+
 		PrintValue("vec.capacity()", svi1.capacity(), fvi1.capacity());
 		for (int i = 0; i < 10; i++)
 		{
 			PrintValue("vec[]", svi1[i], fvi1[i]);
 		}
+
 	}
 
 }

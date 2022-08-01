@@ -129,10 +129,11 @@ namespace ft
 			size_type count = other.size();
 			if (count > this->max_size())
 				throw std::length_error("vector");
-			this->_begin = this->_alloc.allocate(count);
-			this->_end = this->_begin;
-			this->_end_cap = this->_begin + count;
-
+			this->clear();
+			if (this->capacity() < other.size())
+			{
+				this->reserve(other.size());
+			}
 			for (const_iterator it = other.begin(); it != other.end(); ++it)
 			{
 				this->_alloc.construct(this->_end, *it);
@@ -377,24 +378,98 @@ namespace ft
 				throw std::length_error("vector");
 			if (this->size() == this->capacity())
 			{
-				// size 키우기
-				// 이동 -> 00000 / a / 000 뭐 이런식
-				
+				if (this->capacity() * 2 > this->max_size())
+				{
+					this->reserve(this->max_size());
+				}
+				else
+				{
+					if (this->capacity() < addSize)
+						this->reserve(addSize);
+					else
+						this->reserve(this->capacity() * 2);
+				}
 			}
-			else
+
+			for (iterator it = this->end(); it != pos; --it)
 			{
-				// 해당 pos ~ end()까지 한칸씩 이동 -> _end += 1;
-				// pos자리에 삽입
-				this->_alloc.construct(this->_end, this->back());
-				++(this->_end);
-				//for (size_type ul = 0; ul < this->)
-				
+				*it = *(it - 1);
 			}
-			// 끝자리 삽입?
+			++(this->_end);
+			difference_type dif = std::distance(this->begin(), pos);
+			pointer ptrPos = this->_begin + dif;
+			this->_alloc.construct(ptrPos, value);
+			return pos;
 		}
-		void insert(iterator pos, size_type count, const T& value);
+		void insert(iterator pos, size_type count, const T& value)
+		{
+			if (count > this->max_size())
+				throw std::length_error("vector");
+			if (this->size() + count > this->capacity())
+			{
+				if (this->capacity() * 2 > this->max_size())
+				{
+					this->reserve(this->max_size());
+				}
+				else
+				{
+					if (this->capacity() * 2 > this->size() + count)
+						this->reserve(this->capacity() * 2);
+					else
+						this->reserve(this->size() + count);
+				}
+			}
+
+			this->_end += count - 1;
+			for (iterator it = this->end(); it != pos; --it)
+			{
+				*it = *(it - count);
+			}
+			++(this->_end);
+
+			difference_type dif = std::distance(this->begin(), pos);
+			pointer ptrPos = this->_begin + dif;
+			pointer ptrTmp = this->_begin + dif + count - 1;
+			for (; ptrTmp != ptrPos; --ptrTmp)
+			{
+				this->_alloc.construct(ptrTmp, value);
+			}
+			this->_alloc.construct(ptrPos, value);
+		}
 		template<class InputIt>
-		void insert(iterator pos, InputIt first, InputIt last);
+		void insert(iterator pos, InputIt first, InputIt last, 
+			typename enable_if<!is_integral<InputIt>::value>::type* = NULL)
+		{
+			difference_type count = std::distance(first, last) - 1;
+			if (count > this->max_size())
+				throw std::length_error("vector");
+			if (this->size() + count > this->capacity())
+			{
+				if (this->capacity() * 2 > this->max_size())
+				{
+					this->reserve(this->max_size());
+				}
+				else
+				{
+					if (this->capacity() * 2 > this->size() + count)
+						this->reserve(this->capacity() * 2);
+					else
+						this->reserve(this->size() + count);
+				}
+			}
+			this->_end += count - 1;
+			for (iterator it = this->end(); it != pos; --it)
+			{
+				*it = *(it - count);
+			}
+			++(this->_end);
+			difference_type dif = std::distance(this->begin(), pos);
+			pointer ptrPos = this->_begin + dif;
+			for (InputIt it = first; it != last; ++it, (void) ++ptrPos)
+			{
+				this->_alloc.construct(ptrPos, *it);
+			}
+		}
 
 		// pos - iterator before which the content will be inserted. pos may be the end() iterator
 
@@ -448,7 +523,7 @@ namespace ft
 				throw std::length_error("vector");
 			if (count < this->size())
 			{
-				for (size_type ul = 0; ul < this->size() - count; ++ul);
+				for (size_type ul = 0; ul < this->size() - count; ++ul)
 				{
 					--(this->end());
 					this->_alloc.destroy(this->_end);
